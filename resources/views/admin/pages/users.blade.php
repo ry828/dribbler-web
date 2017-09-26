@@ -66,11 +66,12 @@
                 <table class="table datatable-show-all datatable-selection-single datatable-selection-multiple table-bordered table-striped">
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>No</th>
                         <th>Username</th>
                         <th>Email</th>
                         <th>Gender</th>
                         <th>Birthday</th>
+                        <th>Subscribed</th>
                         <th>Status</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -90,14 +91,16 @@
                         </td>
 
                         <td>{{$user->birthday}}</td>
-                        <td><span class="label label-success">
-                            @if ($user->status == 'active')
-                                    Active
-                            @else
-                                    Inactive
-                            @endif
-                            </span></td>
-
+                        @if ($user->subscribe == 0)
+                            <td>Not yet</td>
+                        @else
+                            <td><span class="label label-success">Subscribed</span></td>
+                        @endif
+                        @if ($user->status == 'active')
+                            <td><span class="label label-success">Active</span></td>
+                        @else
+                            <td><span class="label label-default">Inactive</span></td>
+                        @endif
 
                         <td class="text-center">
                             <ul class="icons-list">

@@ -2,25 +2,29 @@
 
 
 @section("js")
-    <!-- <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/libraries/jquery_ui/interactions.min.js') }}"></script> -->
-    <!-- <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script> -->
-    <!-- <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/selects/select2.min.js') }}"></script> -->
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/switch.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/switchery.min.js') }}"></script>
-    <!-- <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_checkboxes_radios.js') }}"></script> -->
-    <!-- <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/velocity/velocity.min.js') }}"></script> -->
-<!--     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/velocity/velocity.ui.min.js') }}"></script> 
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/buttons/spin.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/buttons/ladda.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/notifications/bootbox.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
- -->
-<!--     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_select2.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_inputs.js') }}"></script>
-    
- -->
+    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/uploaders/fileinput.min.js') }}"></script>
+
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/app.js') }}"></script>
+
+    <script type="text/javascript">
+        $(function(){
+            // Basic example
+            $('.file-input').fileinput({
+                browseLabel: 'Browse',
+                browseIcon: '<i class="icon-file-plus"></i>',
+                uploadIcon: '<i class="icon-file-upload2"></i>',
+                removeIcon: '<i class="icon-cross3"></i>',
+                showUpload: false,
+                layoutTemplates: {
+                    icon: '<i class="icon-file-check"></i>'
+                },
+                initialCaption: "No file selected"
+            });
+        });
+    </script>
     <script type="text/javascript">
         var user_id = "{{ $user->id }}";
         $(function() {
@@ -141,6 +145,15 @@
                                     @endif
                                     <fieldset>
                                         <div class="form-group">
+                                            <label class="control-label col-lg-2">Photo</label>
+                                            <div class="col-lg-10">
+                                                <input type="file" class="file-input" name="photo" accept=".png, .jpg" data-allowed-file-extensions='["png", "jpg"]' data-show-caption="true" @if (!isset($user)) required @endif>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <div class="form-group">
                                             <label class="control-label col-md-2">First Name</label>
                                             <div class="col-md-10">
                                                 <input type="text" class="form-control" name="first_name" placeholder="first name" value="{{ isset($user) ? $user->first_name : old('first_name')}}" required>
@@ -194,6 +207,143 @@
                                             </div>
                                         </div>
                                     </fieldset>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <label class="control-label col-lg-2">Role</label>
+                                            <div class="col-lg-10">
+                                                <select name="role" class="select_nric form-control">
+                                                    <option @if (isset($user) && $user->role == 'admin') selected="selected" @endif  value="admin">Admin</option>
+                                                    <option @if (isset($user) && $user->gender == 'guest') selected="selected" @endif value="guest">Guest</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <label class="control-label col-lg-2">Notification Enable</label>
+                                            <div class="col-lg-10">
+                                                <select name="push_enable" class="select_nric form-control">
+                                                    <option @if (isset($user) && $user->push_enable == '1') selected="selected" @endif  value="0">Enable</option>
+                                                    <option @if (isset($user) && $user->push_enable == '0') selected="selected" @endif value="1">Disable</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <label class="control-label col-lg-2">High Quality Video</label>
+                                            <div class="col-lg-10">
+                                                <select name="high_video_enable" class="select_nric form-control">
+                                                    <option @if (isset($user) && $user->high_video_enable == '1') selected="selected" @endif  value="0">Enable</option>
+                                                    <option @if (isset($user) && $user->high_video_enable == '0') selected="selected" @endif value="1">Disable</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    @if (isset($user))
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Following Count</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="following_count" placeholder="0" value="{{ isset($user) ? $user->following_count : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('following_count'))
+                                                        <span class="help-block">{{ $errors->first('following_count') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Follower Count</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="follower_count" placeholder="0" value="{{ isset($user) ? $user->follower_count : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('follower_count'))
+                                                        <span class="help-block">{{ $errors->first('follower_count') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Video Count</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="video_count" placeholder="0" value="{{ isset($user) ? $user->video_count : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('video_count'))
+                                                        <span class="help-block">{{ $errors->first('video_count') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Overal Ranking</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="overall_ranking" placeholder="0" value="{{ isset($user) ? $user->overall_ranking : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('overall_ranking'))
+                                                        <span class="help-block">{{ $errors->first('overall_ranking') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Dribble Score</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="dribble_score" placeholder="0" value="{{ isset($user) ? $user->dribble_score : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('dribble_score'))
+                                                        <span class="help-block">{{ $errors->first('dribble_score') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Dribble Medal</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="dribble_medal" placeholder="0" value="{{ isset($user) ? $user->dribble_medal : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('dribble_medal'))
+                                                        <span class="help-block">{{ $errors->first('dribble_medal') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Trick Completion Count</label>
+                                                <div class="col-md-10">
+                                                    <input type="number" class="form-control" name="trick_completion_count" placeholder="0" value="{{ isset($user) ? $user->trick_completion_count : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('trick_completion_count'))
+                                                        <span class="help-block">{{ $errors->first('trick_completion_count') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Subscribed</label>
+                                                <div class="col-md-10">
+                                                    <input type="text" class="form-control" name="subscribe" placeholder="0" value="@if (isset($user)) @if ($user->subscribe == 0) Not yet @else Subscribed @endif @endif" readonly="readonly" required>
+                                                    @if ($errors->has('created_at'))
+                                                        <span class="help-block">{{ $errors->first('created_at') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Registered Date</label>
+                                                <div class="col-md-10">
+                                                    <input type="text" class="form-control" name="created_at" placeholder="0" value="{{ isset($user) ? $user->created_at : old('0')}}" readonly="readonly" required>
+                                                    @if ($errors->has('created_at'))
+                                                        <span class="help-block">{{ $errors->first('created_at') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    @endif
+
+
+
                                     <fieldset>
                                         <div class="form-group">
                                            <label class="control-label col-lg-2">Subscription</label>

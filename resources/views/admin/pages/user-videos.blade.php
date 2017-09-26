@@ -2,24 +2,11 @@
 
 
 @section("js")
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/libraries/jquery_ui/interactions.min.js') }}"></script>
+
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/switch.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/switchery.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/velocity/velocity.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/velocity/velocity.ui.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/buttons/spin.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/buttons/ladda.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/notifications/bootbox.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
 
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/app.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_select2.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_inputs.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/components_modals.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/category.js') }}"></script>
 @endsection
 
 
@@ -97,8 +84,17 @@
                                 <td>{{$video->comments}}</td>
                                 <td class="text-center">
                                     <ul class="icons-list">
-                                        <li><a href="{{ URL::to('/admin/users/'.$video->video_id.'/edit_video')}}"><i class="icon-pencil7"></i></a></li>
-                                        <li><a href="{{ URL::to('/admin/users/'.$video->video_id.'/delete_video')}}"><i class="icon-trash"></i></a></li>
+                                        <li class="dropdown">
+                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                                <i class="icon-menu9"></i>
+                                            </a>
+
+                                            <ul class="dropdown-menu dropdown-menu-right">
+                                                <li><a href="{{URL::to('admin/users/' . $video->video_id.'/comments')}}">View Comments</a></li>
+                                                <li><a href="{{URL::to('admin/users/' . $video->video_id.'/edit_video')}}">Edit</a></li>
+                                                <li><a href="{{URL::to('admin/users/' . $video->video_id.'/delete_video')}}" onclick="return confirm('Are you sure to delete video?')">Delete</a></li>
+                                            </ul>
+                                        </li>
                                     </ul>
                                 </td>
                             </tr>

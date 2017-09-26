@@ -12,7 +12,7 @@
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_select2.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_inputs.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/components_modals.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/category.js') }}"></script>
+
     <script type="text/javascript">
         $(function(){
             // Basic example

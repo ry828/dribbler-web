@@ -61,11 +61,15 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => ['aut
     Route::get('/users/{user_id}/active', 'UserController@active_user');
     Route::get('/users/{user_id}/inactive', 'UserController@inactive_user');
     Route::get('/users/{user_id}/delete', 'UserController@delete_user');
+
     /* Video */
     Route::get('/users/{video_id}/edit_video', 'UserController@edit_video');
     Route::get('/users/{video_id}/delete_video', 'UserController@delete_video');
     Route::post('/users/{video_id}/update_video', 'UserController@update_video');
-    
+    Route::get('/users/{video_id}/comments', 'UserController@get_comments');
+    Route::get('/users/{video_id}/{comment_id}/edit_comment', 'UserController@goto_edit_comment');
+    Route::post('/users/{video_id}/{comment_id}/update_comment', 'UserController@update_comment');
+    Route::get('/users/{comment_id}/delete_comment', 'UserController@delete_comment');
     /* Categories */
     Route::get('/categories', 'CategoryController@index');
     Route::get('/categories/index', 'CategoryController@index');
@@ -94,11 +98,12 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => ['aut
 
     /* Tricks Management */
     Route::get('/tricks', 'TrickController@index');
-    Route::get('/tricks/add', 'TrickController@getTrick');
-    Route::get('/tricks/{id}', 'TrickController@getTrick');
-    Route::get('/tricks/{id}/delete', 'TrickController@deleteTrick');
-    Route::post('/tricks', 'TrickController@postTrick');
-    Route::post('/tricks/updateOrAdd', 'TrickController@updateOrAddTrick');
+    Route::get('/tricks/add', 'TrickController@goto_add_trick');
+    Route::post('/tricks/create', 'TrickController@create_trick');
+    Route::get('/tricks/{trick_id}/edit', 'TrickController@goto_edit_trick');
+    Route::post('/tricks/{trick_id}/update', 'TrickController@update_trick');
+    Route::get('/tricks/{trick_id}/delete', 'TrickController@deleteTrick');
+
     /* Payment Management */
     Route::get('/transactions', 'PaymentController@index');
     Route::get('/transactions/index', 'PaymentController@index');

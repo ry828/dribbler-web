@@ -10,6 +10,7 @@ use App\Trick;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Yajra\Datatables\Facades\Datatables;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
@@ -22,18 +23,50 @@ class TrickController extends Controller
 
     public function index(Request $request)
     {
-       if ($request::ajax()) {
-            $tricks = DB::table('tricks')
-                ->select('trick_id', 'trick_title', 'category_title', 'trick_tags')
-                ->join('categories', 'categories.category_id', 'tricks.category_id');
+        $tricks = DB::table('tricks')
+            ->select('trick_id', 'trick_title', 'category_title')
+            ->join('categories', 'categories.category_id', 'tricks.category_id')
+            ->get();
 
-            return Datatables::of($tricks)
-                ->make(true);
+        foreach ($tricks as $trick) {
+            $tag_names = Tag::leftJoin('trick_tag', 'trick_tag.tag_id', 'tags.tag_id')
+                ->where('trick_tag.trick_id', $trick->trick_id)
+                ->pluck('tags.tag_name')
+                ->toArray();
+            $trick_tags = implode(', ', $tag_names);
+            $trick->trick_tags = $trick_tags;
         }
 
-        return View('admin.pages.tricks');
+
+        return View('admin.pages.tricks', compact('tricks'));
+    }
+    public function goto_add_trick() {
+        $categories = Category::all();
+        $tags = Tag::all();
+        return View('admin.pages.addEditTrick', compact( 'categories', 'tags'));
     }
 
+    public function goto_edit_trick($trick_id) {
+        $categories = Category::all();
+        $tags = Tag::all();
+        $trick = Trick::findOrFail($trick_id);
+        $trickTags = DB::table('tags')
+            ->join('trick_tag', 'tags.tag_id', 'trick_tag.tag_id')
+            ->where('trick_tag.trick_id', $trick_id)
+            ->get();
+
+        return View('admin.pages.addEditTrick', compact('trick', 'categories', 'tags', 'trickTags'));
+    }
+
+    public function create_trick() {
+        $trick = new Trick();
+        $this->save_trick($trick);
+    }
+
+    public function update_trick($trick_id) {
+        $trick = Trick::findOrFail($trick_id);
+        $this->save_trick($trick);
+    }
     public function getTrick($id = null)
     {
         $categories = Category::all();
@@ -52,21 +85,8 @@ class TrickController extends Controller
         return View('admin.pages.addEditTrick', compact('trick', 'categories', 'tags', 'trickTags'));
     }
 
-    public function deleteTrick($id)
-    {
-        $trick = Trick::findOrFail($id);
-        $trick->delete();
+    public function save_trick($trick) {
 
-        return redirect('admin/tricks')->with(['The Tricks have been deleted successfully']);
-    }
-   
-    public function updateOrAddTrick() {
-        $trick = array();
-        if (Input::get('trick_id') != '0') {
-            $trick = Trick::findOrFail(Input::get('trick_id'));
-        } else {
-            $trick = new Trick();
-        }
         $trick->category_id = Input::get('category_id');
         $trick->trick_title =Input::get('trick_title');
         $trick->trick_tags =Input::get('trick_tags');
@@ -98,5 +118,14 @@ class TrickController extends Controller
 
 
         return redirect('admin/tricks');
+    }
+
+    public function deleteTrick($trick_id)
+    {
+        $trick = Trick::findOrFail($trick_id);
+        $trick->active = 2;
+        $trick->save();
+
+        return redirect('admin/tricks')->with(['Deleted successfully']);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Comment;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\RestfulAPIController;
 use App\User;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\DB;
 // use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Session;
 use Yajra\Datatables\Facades\Datatables;
 use Illuminate\Support\Facades\Validator;
 
@@ -105,7 +107,9 @@ class UserController extends Controller
                 'email' => 'required|email|max:255',
                 'birthday' => 'required',
                 'gender' => 'required|max:50',
-                'subscribe' => 'required|numeric'
+                'role' => 'required|max:50',
+                'notification_enable' => 'required|numeric',
+                'high_video_enable' => 'required|numeric'
             ];
         } else {
             $role =  [
@@ -113,8 +117,7 @@ class UserController extends Controller
                 'last_name' => 'required|max:255',
                 'email' => 'required|email|max:255|unique:users',
                 'birthday' => 'required',
-                'gender' => 'required|unique',
-                'subscribe' => 'required|numeric'
+                'gender' => 'required|unique'
             ];
         }
 
@@ -139,6 +142,19 @@ class UserController extends Controller
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function edit_video($video_id) {
         $video = Video::findOrFail($video_id);
         $user = User::findOrFail($video->user_id);
@@ -151,11 +167,11 @@ class UserController extends Controller
         $user = User::findOrFail($video->user_id);
 
         $delete_video_like = DB::table('video_likes')->where('video_id', $video_id)->delete();
-        $delete_video_like = DB::table('comments')->where('video_id', $video_id)->delete();
+        $delete_video_comments = DB::table('comments')->where('video_id', $video_id)->delete();
         $delete_video = DB::table('videos')->where('video_id', $video_id)->delete();
 
         $videos = Video::where('user_id', $video->user_id)->get();
-     return View('admin.pages.user-videos', compact('user', 'video'));
+     return View('admin.pages.user-videos', compact('user', 'videos'));
     }
 
     public function update_video($video_id) {
@@ -189,6 +205,44 @@ class UserController extends Controller
 
         return View('admin.pages.user-videos', compact('user', 'videos'));
     }
+
+    public function get_comments($video_id) {
+        $video = Video::findOrFail($video_id);
+        $user = User::findOrFail($video->user_id);
+        $comments = Comment::where('video_id', $video_id)
+            ->leftJoin('users', 'users.id', 'comments.commentator_id')
+
+            ->select('users.name', 'comments.message', 'comments.created_at', 'comments.comment_id')
+            ->get();
+        return View('admin.pages.user-video-comments', compact('comments', 'user', 'video_id'));
+    }
+
+    public function goto_edit_comment($comment_id, $video_id) {
+        $comment = Comment::findOrFail($comment_id);
+        return View('admin.pages.editComment', compact('comment', 'video_id'));
+    }
+    public function update_comment($comment_id, $video_id) {
+        $comment = Comment::findOrFail($comment_id);
+        $message = Input::get('message');
+        $comment->message = $message;
+        $comment->save();
+        return redirect('admin/users/'.$video_id.'/comments');
+    }
+
+    public function delete_comment($comment_id) {
+        $result = Comment::where('comment_id', $comment_id)->delete();
+        Session::flash('flash_message', 'Comment Deleted');
+        return redirect()->back();
+    }
+
+
+
+
+
+
+
+
+
 
     public function ajax_update_connection() {
         $user_id = Input::get('user_id');

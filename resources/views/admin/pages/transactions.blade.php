@@ -24,7 +24,7 @@
 
             <div class="breadcrumb-line">
                 <ul class="breadcrumb">
-                    <li><a href="{{ URL::to('/admin/transactions/index') }}"><i class="icon-home2 position-left"></i>Payment History</a></li>
+                    <li><a href="{{ URL::to('/admin/transactions/index') }}">Payment History</a></li>
                 </ul>
             </div>
         </div>
