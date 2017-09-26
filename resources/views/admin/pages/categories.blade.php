@@ -2,18 +2,12 @@
 
 
 @section("js")
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/libraries/jquery_ui/interactions.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/notifications/bootbox.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
 
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/app.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_select2.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/form_inputs.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/components_modals.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/category.js') }}"></script>
+
     <script type="text/javascript">
         $(function(){
             // Table setup
@@ -50,101 +44,9 @@
                 minimumResultsForSearch: Infinity,
                 width: 'auto'
             });
-            /**
-             * Add Category Dlg
-             */
-            $('#btn_add_category').on('click', function() {
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-                    }
-                });
-                $.ajax({
-                    type: "GET",
-                    url: './ajax/categories/next_id',
-                    dataType: 'json',
-                    success: function (data) {
-                        $('.form-group input').val('');
-                        $('#category_id').val(data.category_id);
-                        $('.form-group input').prop('readonly', false);
-                        $('#btn_category_submit').removeClass('btn-danger');
-                        $('#btn_category_submit').addClass('btn-success');
-                        $('#btn_category_submit').html('Add category');
-                        $('#btn_category_submit').data('value', 'add');
-                        $('#modal_category').modal('show');
-                    },
-                });
-            });
-            /**
-             * Edit category Dlg
-             */
-            $('table').on('click', '.btn_edit_category', function() {
-                var category_id = $(this).data('value');
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-                    }
-                });
-                $.ajax({
-                    type: "GET",
-                    url: './ajax/categories/get',
-                    data: {"category_id": category_id},
-                    dataType: 'json',
-                    success: function (data) {
-                        $('#category_id').val(data.category_id);
-                        $('#category_title').val(data.category_title);
-                        $('#price').val(data.price);
-                        $('.form-group input').prop('readonly', false);
-                        $('#btn_category_submit').removeClass('btn-danger');
-                        $('#btn_category_submit').addClass('btn-success');
-                        $('#btn_category_submit').html('Update');
-                        $('#btn_category_submit').data('value', 'edit');
-                        $('#modal_category').modal('show');
-                    }
-                });
-            });
 
-            /**
-             * Delete category Dlg
-             */
-            $('table').on('click', '.btn_delete_category', function() {
-                var category_id = $(this).data('value');
-                $.ajaxSetup({
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-                        }
-                    });
-                    $.ajax({
-                        type: "GET",
-                        url: './ajax/categories/get',
-                        data: {"category_id": category_id},
-                        dataType: 'json',
-                        success: function (data) {
-                            $('#category_id').val(data.category_id);
-                            $('#category_title').val(data.category_title);
-                            $('#price').val(data.price);
-                            $('.form-group input').prop('readonly', true);
-                            $('#btn_category_submit').removeClass('btn-success');
-                            $('#btn_category_submit').addClass('btn-danger');
-                            $('#btn_category_submit').html('Delete');
-                            $('#modal_title').html('Do you really want to delete this category?');
-                            $('#btn_category_submit').data('value', 'delete');
-                            $('#modal_category').modal('show');
-                        }
-                    });
-                
-                });
+        });
 
-                /**
-                 * Submit with category Dialog
-                 */
-                $("#btn_category_submit").on("click", function(e) {
-                    e.preventDefault();
-                    var slug = $('#modal_category form').attr('action') + "/" + $('#btn_category_submit').data('value');
-                    $('#modal_category form').attr('action', slug).submit();
-                });
-            });
-        
 
     </script>
 @endsection
@@ -167,11 +69,11 @@
 
         <div class="breadcrumb-line">
             <ul class="breadcrumb">
-                <li><a href="{{ URL::to('/admin/transactions/index')}}"><i class="icon-home2 position-left"></i>Categories</a></li>
+                <li><a href="{{ URL::to('/admin/categories/index')}}"><i class="icon-home2 position-left"></i>Categories</a></li>
             </ul>
 
             <ul class="breadcrumb-elements">
-                <li><a href="#" data-toggle="modal" data-target="#modal_category" id="btn_add_category"><i class="icon-add position-left"></i> Add Category</a></li>
+                <li><a href="{{ URL::to('/admin/categories/add')}}" ><i class="icon-add position-left"></i> Add Category</a></li>
             </ul>
         </div>
     </div>
@@ -202,16 +104,13 @@
         @endif
 
         <div class="panel panel-flat">
-            <table class="table table-category table-striped">
+            <table class="table table-category table-bordered table-striped">
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Name - English</th>
-                   <!--  <th>Name - German</th>
-                    <th>Name - Polish</th>
-                    <th>Name - Spanish</th>
-                    <th>Name - French</th> -->
+                    <th>Name</th>
                     <th>Lock</th>
+                    <th>Status</th>
                     <th class="text-center">Actions</th>
                 </tr>
                 </thead>
@@ -221,16 +120,27 @@
                     <tr>
                         <td>{{$category->category_id}}</td>
                         <td>{{$category->category_title}}</td>
-                       <!--  <td>{{$category->category_title}}</td>
-                        <td>{{$category->category_title}}</td>
-                        <td>{{$category->category_title}}</td>
-                        <td>{{$category->category_title}}</td> -->
                         <td>{{$category->lock}}</td>
+                        @if ($category->active == 0)
+                            <td><span class="label label-default">Inactive</span></td>
+                        @else
+                            <td><span class="label label-success">Active</span></td>
+                        @endif
 
                         <td class="text-center">
                             <ul class="icons-list">
-                                <li><a href="#" class="btn_edit_category" data-value="{{$category->category_id}}" data-toggle="modal" data-target="#modal_category"><i class="icon-pencil7"></i></a></li>
-                                <!-- <li><a href="#" class="btn_delete_category" data-value="{{$category->category_id}}" data-toggle="modal" data-target="#modal_category"><i class="icon-trash"></i></a></li> -->
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                        <i class="icon-menu9"></i>
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a href="{{URL::to('admin/categories/' . $category->category_id . '/edit')}}">Edit</a></li>
+                                        <li><a href="{{URL::to('admin/categories/' . $category->category_id . '/active')}}">Active</a></li>
+                                        <li><a href="{{URL::to('admin/categories/' . $category->category_id . '/inactive')}}" onclick="return confirm('Are you sure that inactive category?')">Inactive</a></li>
+                                        <li><a href="{{URL::to('admin/categories/' . $category->category_id . '/delete')}}" onclick="return confirm('Are you sure that delete category?')">Delete</a></li>
+                                    </ul>
+                                </li>
                             </ul>
                         </td>
                     </tr>

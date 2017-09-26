@@ -20,11 +20,19 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::where('active', '!=', '2')->get();
 
         return view('admin.pages.categories', compact('categories'));
     }
 
+    public function goto_add_category() {
+        return view('admin.pages.addEditCategory');
+    }
+
+    public function goto_edit_category($category_id) {
+        $category = Category::findOrFail($category_id);
+        return view('admin.pages.addEditCategory', compact('category'));
+    }
 
     public function create_category()
     {
@@ -64,10 +72,10 @@ class CategoryController extends Controller
 
         Session::flash('flash_message', 'Added');
 
-        return redirect()->back();
+        return redirect('/admin/categories');
     }
 
-    public function edit_category()
+    public function update_category($category_id)
     {
         $inputs = Input::all();
 
@@ -84,25 +92,41 @@ class CategoryController extends Controller
             return redirect()->back()->withErrors($validator->messages())->withInput();
         }
 
-        $category = Category::findOrFail(Input::get(category_id));
+        $category = Category::findOrFail($category_id);
         $category->fill($inputs);
         $category->save();
 
         Session::flash('flash_message', 'Changes Saved');
 
-        return redirect()->back();
+        return redirect('/admin/categories');
     }
 
-    public function delete_category()
+    public function active_category($category_id)
     {
-        $category_id = Input::get('category_id');
-
         $category = Category::findOrFail($category_id);
-        $category->delete();
+        $category->active = 1;
+        $category->save();
+
+        return redirect('/admin/categories');
+    }
+    public function inactive_category($category_id)
+    {
+        $category = Category::findOrFail($category_id);
+        $category->active = 0;
+        $category->save();
+
+        return redirect('/admin/categories');
+    }
+
+    public function delete_category($category_id)
+    {
+        $category = Category::findOrFail($category_id);
+        $category->active = 2;
+        $category->save();
 
         Session::flash('flash_message', 'Deleted');
 
-        return redirect()->back();
+        return redirect('/admin/categories');
     }
 
 

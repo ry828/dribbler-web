@@ -2,11 +2,14 @@
 
 
 @section("js")
+
+
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
 
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/app.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/pages/users.js') }}"></script>
+
 @endsection
 
 
@@ -66,9 +69,8 @@
                         <th>ID</th>
                         <th>Username</th>
                         <th>Email</th>
-                        <th>Advanced</th>
-                        <th>Pro</th>
-                        <th>Country</th>
+                        <th>Gender</th>
+                        <th>Birthday</th>
                         <th>Status</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -79,15 +81,23 @@
                         <td>{{$i + 1}}</td>
                         <td>{{$user->first_name .' '. $user->last_name}}</td>
                         <td>{{$user->email}}</td>
-                        <td>YES</td>
-                        <td>YES</td>
-                        <td>GERMANY</td>
+                        <td>
+                            @if ($user->gender == 0)
+                                    Male
+                            @else
+                                    Female
+                            @endif
+                        </td>
 
-                        @if ($user->status == 'active')
-                            <td><span class="label label-success">Active</span></td>
-                        @else
-                            <td><span class="label label-default">Inactive</span></td>
-                        @endif
+                        <td>{{$user->birthday}}</td>
+                        <td><span class="label label-success">
+                            @if ($user->status == 'active')
+                                    Active
+                            @else
+                                    Inactive
+                            @endif
+                            </span></td>
+
 
                         <td class="text-center">
                             <ul class="icons-list">

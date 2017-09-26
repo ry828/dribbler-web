@@ -69,11 +69,13 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => ['aut
     /* Categories */
     Route::get('/categories', 'CategoryController@index');
     Route::get('/categories/index', 'CategoryController@index');
-    Route::get('/categories/add', 'CategoryController@create_category');
-//    Route::post('/categories/create', 'CategoryController@create_category');
-//    Route::get('/categories/edit', 'CategoryController@edit_category');
-//    Route::post('/categories/update', 'CategoryController@edit_category');
-//    Route::post('/categories/delete', 'CategoryController@delete_category');
+    Route::get('/categories/add', 'CategoryController@goto_add_category');
+    Route::post('/categories/create', 'CategoryController@create_category');
+    Route::get('/categories/{category_id}/edit', 'CategoryController@goto_edit_category');
+    Route::post('/categories/{category_id}/update', 'CategoryController@udpate_category');
+    Route::get('/categories/{category_id}/active', 'CategoryController@active_category');
+    Route::get('/categories/{category_id}/inactive', 'CategoryController@inactive_category');
+    Route::get('/categories/{category_id}/delete', 'CategoryController@delete_category');
 
     /* Tags */
     Route::get('/tags', 'CategoryController@getTags');

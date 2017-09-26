@@ -26,7 +26,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $users = User::where('role', '!=', 'admin')->get();
+        $users = User::where('role', '!=', 'admin')->where('status', '!=', 'deleted')->get();
         return View('admin.pages.users', compact('users'));
 
     }
@@ -87,7 +87,8 @@ class UserController extends Controller
     public function delete_user($user_id)
     {
         $user = User::findOrFail($user_id);
-        $user->delete();
+        $user->status = 'deleted';
+        $user->save();
 
         Session::flash('flash_message', 'User Deleted');
 

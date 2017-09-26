@@ -63,7 +63,7 @@
         @endif
 
         <div class="panel panel-flat">
-            <table class="table table-tag table-scrollable table-striped">
+            <table class="table datatable-show-all datatable-selection-single datatable-selection-multiple table-bordered table-striped">
                 <thead>
                 <tr>
                     <th>ID</th>
