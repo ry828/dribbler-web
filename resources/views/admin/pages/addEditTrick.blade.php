@@ -56,7 +56,7 @@
     <!-- /page header -->
 
     <!-- Content area -->
-    <div class="content">q
+    <div class="content">
         <!-- Error Message -->
         @if (count($errors) > 0)
             <div class="alert alert-danger no-border">

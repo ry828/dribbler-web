@@ -25,12 +25,6 @@ class CategoryController extends Controller
         return view('admin.pages.categories', compact('categories'));
     }
 
-    public function getTags()
-    {
-        $tags = Tag::all();
-
-        return view('admin.pages.tags', compact('tags'));
-    }
 
     public function create_category()
     {
@@ -111,6 +105,33 @@ class CategoryController extends Controller
         return redirect()->back();
     }
 
+
+
+
+
+
+
+
+
+
+
+    public function getTags()
+    {
+        $tags = Tag::where('active', '1')->get();
+
+        return view('admin.pages.tags', compact('tags'));
+    }
+
+    public function goto_add_tag() {
+        return view('admin.pages.addEditTag');
+    }
+
+    public function goto_edit_tag($tag_id) {
+        $tag = Tag::findOrFail($tag_id);
+        return view('admin.pages.addEditTag', compact('tag'));
+    }
+
+
     public function create_tag()
     {
         $inputs = Input::all();
@@ -133,12 +154,11 @@ class CategoryController extends Controller
         return redirect('/admin/tags');
     }
 
-    public function edit_tag()
+    public function update_tag($tag_id)
     {
         $inputs = Input::all();
 
         $roles = [
-            'tag_id' => 'required | numeric',
             'tag_name' => 'required | max:50',
         ];
 
@@ -147,26 +167,30 @@ class CategoryController extends Controller
             return redirect()->back()->withErrors($validator->messages())->withInput();
         }
 
-        $tag = Tag::findOrFail(Input::get('tag_id'));
+        $tag = Tag::findOrFail($tag_id);
         $tag->fill($inputs);
         $tag->save();
 
         Session::flash('flash_message', 'Changes Saved');
 
-        return redirect()->back();
+        return redirect('/admin/tags');
     }
 
-    public function delete_tag()
+    public function delete_tag($tag_id)
     {
-        $tag_id = Input::get('tag_id');
-        $result = DB::table('trick_tag')->where('tag_id', $tag_id)->delete();
         $tag = Tag::findOrFail($tag_id);
-        $tag->delete();
+        $tag->active = 0;
+        $tag->save();
 
-        Session::flash('flash_message', 'Deleted');
-
-        return redirect()->back();
+        return redirect('/admin/tags');
     }
+
+
+
+
+
+
+
 
     public function ajax_get_category()
     {

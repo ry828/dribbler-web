@@ -69,15 +69,19 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => ['aut
     /* Categories */
     Route::get('/categories', 'CategoryController@index');
     Route::get('/categories/index', 'CategoryController@index');
-    Route::post('/categories/add', 'CategoryController@create_category');
-    Route::post('/categories/edit', 'CategoryController@edit_category');
-    Route::post('/categories/delete', 'CategoryController@delete_category');
+    Route::get('/categories/add', 'CategoryController@create_category');
+//    Route::post('/categories/create', 'CategoryController@create_category');
+//    Route::get('/categories/edit', 'CategoryController@edit_category');
+//    Route::post('/categories/update', 'CategoryController@edit_category');
+//    Route::post('/categories/delete', 'CategoryController@delete_category');
 
     /* Tags */
     Route::get('/tags', 'CategoryController@getTags');
-    Route::post('/tags/add', 'CategoryController@create_tag');
-    Route::post('/tags/edit', 'CategoryController@edit_tag');
-    Route::post('/tags/delete', 'CategoryController@delete_tag');
+    Route::get('/tags/add', 'CategoryController@goto_add_tag');
+    Route::post('/tags/create', 'CategoryController@create_tag');
+    Route::get('/tags/{tag_id}/edit', 'CategoryController@goto_edit_tag');
+    Route::post('/tags/{tag_id}/update', 'CategoryController@update_tag');
+    Route::get('/tags/{tag_id}/delete', 'CategoryController@delete_tag');
 
     /* Ajax */
     Route::get('/ajax/categories/get', 'CategoryController@ajax_get_category');
