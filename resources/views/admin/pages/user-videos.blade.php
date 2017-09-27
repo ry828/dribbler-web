@@ -7,6 +7,21 @@
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
 
     <script type="text/javascript" src="{{ URL::asset('admin_assets/js/core/app.js') }}"></script>
+
+    <script>
+        $(function() {
+            $(".video").click(function () {
+                var theModal = $(this).data("target"),
+                    videoSRC = $(this).attr("data-video"),
+                    videoSRCauto = videoSRC + "?modestbranding=1&rel=0&controls=0&showinfo=0&html5=1&autoplay=1";
+                $(theModal + ' iframe').attr('src', videoSRCauto);
+                $(theModal + ' button.close').click(function () {
+                    $(theModal + ' iframe').attr('src', '');
+                });
+            });
+        });
+    </script>
+
 @endsection
 
 
@@ -76,7 +91,7 @@
                                 <td>{{$video->video_id}}</td>
                                 <td>
                                     <a href="#" data-popup="lightbox">
-                                        <img src="{{ $video->thumbnail }}" alt="" class="img-rounded img-preview">
+                                        <img src="{{ $video->thumbnail }}" alt="" class="img-rounded img-preview video" data-video="{{$video->hd_url}}" data-toggle="modal" data-target="#videoModal">
                                     </a>
                                 </td>
                                 <td>{{$video->likes}}</td>
@@ -106,7 +121,18 @@
             </div>
         </div>
         <!-- /content area -->
-
+    {{--video player modal--}}
+        <div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <iframe width="100%" height="350" src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{--/video player modal--}}
     </div>
     <!-- /main content -->
 @endsection
