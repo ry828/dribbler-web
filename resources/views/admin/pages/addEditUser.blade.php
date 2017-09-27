@@ -23,6 +23,9 @@
                 },
                 initialCaption: "No file selected"
             });
+            $('.file-input').change(function () {
+               $('.photo').attr('hidden', true);
+            });
         });
     </script>
     <script type="text/javascript">
@@ -145,9 +148,13 @@
                                     @endif
                                     <fieldset>
                                         <div class="form-group">
+                                            <img src="{{$user->photo}}" class="photo" style="width:150px;height:150px;">
+                                        </div>
+                                        <div class="form-group">
                                             <label class="control-label col-lg-2">Photo</label>
                                             <div class="col-lg-10">
-                                                <input type="file" class="file-input" name="photo" accept=".png, .jpg" data-allowed-file-extensions='["png", "jpg"]' data-show-caption="true" @if (!isset($user)) required @endif>
+
+                                                <input type="file"  class="file-input" name="photo" accept=".png, .jpg" data-allowed-file-extensions='["png", "jpg"]' data-show-caption="true" @if (!isset($user)) required @endif>
                                             </div>
                                         </div>
                                     </fieldset>
