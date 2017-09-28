@@ -85,6 +85,9 @@ class RestfulAPIController extends Controller
             if (!Hash::check($password, $hashedPassword)) {
                 return $this->responseBadRequestError('Email or Password is not correct');
             }
+            if ($user->status != 'active') {
+                return $this->responseAccessDeniedError('Account is disabled or deleted');
+            }
         }
 
         // Create Token
@@ -493,7 +496,7 @@ class RestfulAPIController extends Controller
         //get overview statistic
         $overview_statistic = array();
         ////
-        $categories = Category::get();
+        $categories = Category::where('active', '1')->get();
         foreach ($categories as $category) {
             $tricks = Trick::where('category_id', $category->category_id)->get();
             $average_per_category = 0;
@@ -580,6 +583,7 @@ class RestfulAPIController extends Controller
             ->get();
 
         $categories = DB::table('categories')
+            ->where('categories.active', '1')
             ->select('categories.*', DB::raw('Round(avg(try_on), 1) as score'))
             ->leftJoin('tricks', 'tricks.category_id', 'categories.category_id')
             ->leftJoin('dribblers', function ($join) use ($user) {
@@ -731,7 +735,9 @@ class RestfulAPIController extends Controller
 
     public function get_categories()
     {
-        $categories = Category::with('tricks')->get();
+        $categories = Category::with('tricks')
+            ->where('active', '1')
+            ->get();
 
         return $this->responseSuccess($categories);
     }
@@ -1014,16 +1020,14 @@ class RestfulAPIController extends Controller
             $size = 30;
         }
         $search_query = Input::get('query');
-        $tag = Input::get('tags');
-        $tags = array();
+        $tag_id_string = Input::get('tag_ids');
         $trick_ids = array();
-        if (strlen($tag) > 0) {
-            $tags = explode(',', $tag);
-            $query = DB::table('tricks');
-            foreach ($tags as $tag_item) {
-                $query -> orWhere('trick_tags', 'like', '%'.$tag_item.'%');
-            }
-            $trick_ids = $query->pluck('trick_id');
+        if (strlen($tag_id_string) > 0) {
+            $tag_ids = explode(',', $tag_id_string);
+            $trick_ids = DB::table('trick_tag')
+                ->whereIn('tag_id', $tag_ids)
+                ->pluck('trick_id');
+
         }
         // var_dump($trick_ids);
         $feeds = Video::join('users', function ($join) {
@@ -1047,16 +1051,13 @@ class RestfulAPIController extends Controller
             $size = 30;
         }
         $search_query = Input::get('query');
-        $tag = Input::get('tags');
-        $tags = array();
+        $tag_id_string = Input::get('tag_ids');
         $trick_ids = array();
-       if (strlen($tag) > 0) {
-            $tags = explode(',', $tag);
-            $query = DB::table('tricks');
-            foreach ($tags as $tag_item) {
-                $query -> orWhere('trick_tags', 'like', '%'.$tag_item.'%');
-            }
-            $trick_ids = $query->pluck('trick_id');
+       if (strlen($tag_id_string) > 0) {
+           $tag_ids = explode(',', $tag_id_string);
+           $trick_ids = DB::table('trick_tag')
+               ->whereIn('tag_id', $tag_ids)
+               ->pluck('trick_id');
         }
         $followers = Follow::where('user_id', $me->id)
             ->where('follow_status', true)

@@ -141,11 +141,14 @@ class UserController extends Controller
             // Upload  avatar to S3
             try {
                 $photo = Input::file('photo');
-                $img = Image::make($photo)->encode('png')->resize(300, 300)->stream();
-                $thumbnailFileName = 'avatars/Avatar'.$user->id .'.'. $photo->extension();
-                Storage::disk('S3Video')->put($thumbnailFileName, (string)$img, 'public');
-                $user->photo = Storage::disk('S3Video')->url($thumbnailFileName);
-                $user->save();
+                $img = Image::make(Input::file('photo'))->encode('png')->resize(100, 100)->stream();
+                $fileName = 'avatar' . $user->id . str_random(1) . "." . $photo->extension();
+                //$bResult = Storage::disk('S3Avatar')->put($fileName, file_get_contents($photo), 'public');
+                $bResult = Storage::disk('S3Avatar')->put($fileName, (string)$img, 'public');
+                if ($bResult) {
+                    $user->photo = Storage::disk('S3Avatar')->url($fileName);
+                    $user->save();
+                }
             } catch (Exception $e) {
                 return redirect('admin/users')->with('flash_message', 'The user have been updated successfully, but user photo was not uploaded');
             }

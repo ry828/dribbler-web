@@ -26,6 +26,7 @@ class TrickController extends Controller
     {
         $tricks = DB::table('tricks')
             ->select('trick_id', 'trick_title', 'category_title')
+            ->where('active', '1')
             ->join('categories', 'categories.category_id', 'tricks.category_id')
             ->get();
 
@@ -42,13 +43,13 @@ class TrickController extends Controller
         return View('admin.pages.tricks', compact('tricks'));
     }
     public function goto_add_trick() {
-        $categories = Category::all();
+        $categories = Category::where('active', '1')->get();
         $tags = Tag::all();
         return View('admin.pages.addEditTrick', compact( 'categories', 'tags'));
     }
 
     public function goto_edit_trick($trick_id) {
-        $categories = Category::all();
+        $categories = Category::where('active', '1')->get();
         $tags = Tag::all();
         $trick = Trick::findOrFail($trick_id);
         $trickTags = DB::table('tags')
@@ -69,7 +70,7 @@ class TrickController extends Controller
             try {
                 $thumbnail = Input::file('thumbnail');
                 $img = Image::make($thumbnail)->encode('png')->resize(300, 300)->stream();
-                $thumbnailFileName = $trick->category_id . '/'.$trick->trick_title.'/thumbnail' . $thumbnail->extension();
+                $thumbnailFileName = $trick->category_id . '/'.$trick->trick_title.'/thumbnail.' . $thumbnail->extension();
 
                 $file = Input::file('hd_video');
                 // $videoFileName = $video->video_id . '/video.' . $file->extension();
@@ -217,23 +218,6 @@ class TrickController extends Controller
         }
 
         return redirect('admin/tricks');
-    }
-    public function getTrick($id = null)
-    {
-        $categories = Category::all();
-        $tags = Tag::all();
-
-        if (empty($id)) {
-            return View('admin.pages.addEditTrick', compact('categories', 'tags'));
-        }
-
-        $trick = Trick::findOrFail($id);
-        $trickTags = DB::table('tags')
-            ->join('trick_tag', 'tags.tag_id', 'trick_tag.tag_id')
-            ->where('trick_tag.trick_id', $id)
-            ->get();
-
-        return View('admin.pages.addEditTrick', compact('trick', 'categories', 'tags', 'trickTags'));
     }
 
 
