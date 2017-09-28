@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Tag;
 use App\Trick;
 // use Illuminate\Http\Request;
+use App\Trick_tag;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,40 +61,11 @@ class TrickController extends Controller
 
     public function create_trick() {
         $trick = new Trick();
-        $this->save_trick($trick);
-    }
-
-    public function update_trick($trick_id) {
-        $trick = Trick::findOrFail($trick_id);
-        $this->save_trick($trick);
-    }
-    public function getTrick($id = null)
-    {
-        $categories = Category::all();
-        $tags = Tag::all();
-
-        if (empty($id)) {
-            return View('admin.pages.addEditTrick', compact('categories', 'tags'));
-        }
-
-        $trick = Trick::findOrFail($id);
-        $trickTags = DB::table('tags')
-            ->join('trick_tag', 'tags.tag_id', 'trick_tag.tag_id')
-            ->where('trick_tag.trick_id', $id)
-            ->get();
-
-        return View('admin.pages.addEditTrick', compact('trick', 'categories', 'tags', 'trickTags'));
-    }
-
-    public function save_trick($trick) {
-
         $trick->category_id = Input::get('category_id');
         $trick->trick_title =Input::get('trick_title');
-        $trick->trick_tags =Input::get('trick_tags');
-        // $trick->trick_description = Input::get('trick_description');
-        $trick->trick_description = '[{"title": "First", "thumbnail": "https://s3.eu-central-1.amazonaws.com/dribbler.org-category/beginner/Ultimate+Best+Football+Tricks+Skills/descriptioin/step1.png", "description": "LSLSs work with infants and children who are deaf or hard of hearing and their families seeking a listening and spoken language outcome in a variety of settings"}, {"title": "Second Step", "thumbnail": "https://s3.eu-central-1.amazonaws.com/dribbler.org-category/beginner/Ultimate+Best+Football+Tricks+Skills/descriptioin/step2.png", "description": "LSLSs work with infants and children who are deaf or hard of hearing and their families seeking a listening and spoken language outcome in a variety of settings"}, {"title": "Third Step", "thumbnail": "https://s3.eu-central-1.amazonaws.com/dribbler.org-category/beginner/Ultimate+Best+Football+Tricks+Skills/descriptioin/step3.png", "description": "LSLSs work with infants and children who are deaf or hard of hearing and their families seeking a listening and spoken language outcome in a variety of settings"}, {"title": "Firth Step", "thumbnail": "https://s3.eu-central-1.amazonaws.com/dribbler.org-category/beginner/Ultimate+Best+Football+Tricks+Skills/descriptioin/step4.png", "description": "LSLSs work with infants and children who are deaf or hard of hearing and their families seeking a listening and spoken language outcome in a variety of settings"}]';
+
         if (Input::hasFile('thumbnail') && Input::hasFile('hd_video')) {
-           // Upload video and thumbnail to S3
+            // Upload video and thumbnail to S3
             try {
                 $thumbnail = Input::file('thumbnail');
                 $img = Image::make($thumbnail)->encode('png')->resize(300, 300)->stream();
@@ -114,11 +86,156 @@ class TrickController extends Controller
                 return $this->responseBadRequestError([]);
             }
         }
+
+        //add description
+        $description_titles = Input::get('title');
+        $description_descriptions = Input::get('description');
+        $descriptions = array();
+        if (Input::hasFile('picture')) {
+            $pictures = Input::file('picture');
+            for ($i = 0; $i < count($pictures); $i ++) {
+
+                try {
+                    $thumbnail = Input::file('thumbnail');
+                    $img = Image::make($thumbnail)->encode('png')->resize(300, 300)->stream();
+                    $thumbnailFileName = $trick->category_id . '/'.$trick->trick_title.'/description_'.$i .'.'. $thumbnail->extension();
+                    Storage::disk('S3Video')->put($thumbnailFileName, (string)$img, 'public');
+
+                    $desc = array();
+                    $desc['title'] = $description_titles[$i];
+                    $desc['description'] = $description_descriptions[$i];
+                    $desc['thumbnail'] = Storage::disk('S3Video')->url($thumbnailFileName);
+
+//                    $description = json_encode($desc);
+
+                    array_push($descriptions, $desc);
+                } catch (Exception $e) {
+                    $trick->delete();
+                    return $this->responseBadRequestError([]);
+                }
+            }
+        } else {
+
+        }
+        $trick->trick_description = json_encode($descriptions);
+        //save trick
         $trick->save();
 
+        //add tag
+        $tag_ids =Input::get('trick_tags');
+        foreach ($tag_ids as $tag_id) {
+            $trick_tag = new Trick_tag();
+            $trick_tag->tag_id = $tag_id;
+            $trick_tag->trick_id = $trick->trick_id;
+            $trick_tag->save();
+        }
 
         return redirect('admin/tricks');
     }
+
+    public function update_trick($trick_id) {
+        $trick = Trick::findOrFail($trick_id);
+        $trick->category_id = Input::get('category_id');
+        $trick->trick_title =Input::get('trick_title');
+        $trick->save();
+        if (Input::hasFile('thumbnail')) {
+            // Upload  thumbnail to S3
+            try {
+                $thumbnail = Input::file('thumbnail');
+                $img = Image::make($thumbnail)->encode('png')->resize(300, 300)->stream();
+                $thumbnailFileName = $trick->category_id . '/'.$trick->trick_title.'/thumbnail.' . $thumbnail->extension();
+                Storage::disk('S3Video')->put($thumbnailFileName, (string)$img, 'public');
+                $trick->trick_thumbnail = Storage::disk('S3Video')->url($thumbnailFileName);
+                $trick->save();
+            } catch (Exception $e) {
+                $trick->delete();
+                return $this->responseBadRequestError([]);
+            }
+        }
+
+        if ( Input::hasFile('hd_video')) {
+            // Upload video  to S3
+            try {
+                $file = Input::file('hd_video');
+                // $videoFileName = $video->video_id . '/video.' . $file->extension();
+                $videoFileName = $trick->category_id . '/'.$trick->trick_title . '/video.mp4';
+                Storage::disk('S3Video')->put($videoFileName, file_get_contents($file), 'public');
+                $trick->hd_video_url = Storage::disk('S3Video')->url($videoFileName);
+                $trick->ld_video_url = $trick->hd_video_url;
+                $trick->save();
+            } catch (Exception $e) {
+                $trick->delete();
+                return $this->responseBadRequestError([]);
+            }
+        }
+
+        //add description
+        $description_titles = Input::get('title');
+        $description_descriptions = Input::get('description');
+        $descriptions = array();
+        if (Input::hasFile('picture')) {
+            $pictures = Input::file('picture');
+            for ($i = 0; $i < count($pictures); $i ++) {
+
+                try {
+                    $thumbnail = Input::file('thumbnail');
+                    $img = Image::make($thumbnail)->encode('png')->resize(300, 300)->stream();
+                    $thumbnailFileName = $trick->category_id . '/'.$trick->trick_title.'/description_'.$i .'.'. $thumbnail->extension();
+                    Storage::disk('S3Video')->put($thumbnailFileName, (string)$img, 'public');
+
+                    $desc = array();
+                    $desc['title'] = $description_titles[$i];
+                    $desc['description'] = $description_descriptions[$i];
+                    $desc['thumbnail'] = Storage::disk('S3Video')->url($thumbnailFileName);
+
+//                    $description = json_encode($desc);
+
+                    array_push($descriptions, $desc);
+                } catch (Exception $e) {
+                    $trick->delete();
+                    return $this->responseBadRequestError([]);
+                }
+            }
+        } else {
+
+        }
+        $trick->trick_description = json_encode($descriptions);
+        //save trick
+        $trick->save();
+
+        //add tag
+        $tag_ids =Input::get('trick_tags');
+        foreach ($tag_ids as $tag_id) {
+            $trick_tags = Trick_tag::where('trick_id', $trick_id)->where('tag_id', $tag_id)->get();
+            if (count($trick_tags) == 0) {
+                $trick_tag = new Trick_tag();
+                $trick_tag->tag_id = $tag_id;
+                $trick_tag->trick_id = $trick->trick_id;
+                $trick_tag->save();
+
+            }
+        }
+
+        return redirect('admin/tricks');
+    }
+    public function getTrick($id = null)
+    {
+        $categories = Category::all();
+        $tags = Tag::all();
+
+        if (empty($id)) {
+            return View('admin.pages.addEditTrick', compact('categories', 'tags'));
+        }
+
+        $trick = Trick::findOrFail($id);
+        $trickTags = DB::table('tags')
+            ->join('trick_tag', 'tags.tag_id', 'trick_tag.tag_id')
+            ->where('trick_tag.trick_id', $id)
+            ->get();
+
+        return View('admin.pages.addEditTrick', compact('trick', 'categories', 'tags', 'trickTags'));
+    }
+
 
     public function deleteTrick($trick_id)
     {

@@ -84,7 +84,7 @@ class CategoryController extends Controller
             'category_title' => 'required | max:255',
             'lock' => 'required | boolean',
             'price' => 'required | numeric',
-            'thumbnail' => 'required | file'
+
         ];
 
         $validator = Validator::make($inputs, $roles);
@@ -95,6 +95,22 @@ class CategoryController extends Controller
         $category = Category::findOrFail($category_id);
         $category->fill($inputs);
         $category->save();
+
+        if (Input::hasFile('thumbnail')) {
+            // Upload thumbnail to S3
+            try {
+                $thumbnail = Input::file('thumbnail');
+                $img = Image::make($thumbnail)->encode('png')->resize(300, 300)->stream();
+                $thumbnailFileName = 'category/'.$category->category_title . '/thumbnail.' . $thumbnail->extension();
+
+                Storage::disk('S3Video')->put($thumbnailFileName, (string)$img, 'public');
+                $category->thumbnail = Storage::disk('S3Video')->url($thumbnailFileName);
+
+            } catch (Exception $e) {
+                $category->delete();
+                return $this->responseBadRequestError([]);
+            }
+        }
 
         Session::flash('flash_message', 'Changes Saved');
 

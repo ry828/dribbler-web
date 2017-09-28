@@ -108,7 +108,7 @@ class UserController extends Controller
                 'birthday' => 'required',
                 'gender' => 'required|max:50',
                 'role' => 'required|max:50',
-                'notification_enable' => 'required|numeric',
+                'push_enable' => 'required|numeric',
                 'high_video_enable' => 'required|numeric'
             ];
         } else {
@@ -130,16 +130,27 @@ class UserController extends Controller
             $user = User::findOrFail($request->get('id'));
             $user->fill($data);
             $user->save();
-
-            return redirect('admin/users')->with('flash_message', 'The user have been updated successfully');
         } else {
             $user = new User();
             $user->fill($data);
             $user->verified = true;
             $user->save();
-
-            return redirect('admin/users')->with('flash_message', 'The user have been created successfully');
         }
+
+        if (Input::hasFile('photo')) {
+            // Upload  avatar to S3
+            try {
+                $photo = Input::file('photo');
+                $img = Image::make($photo)->encode('png')->resize(300, 300)->stream();
+                $thumbnailFileName = 'avatars/Avatar'.$user->id .'.'. $photo->extension();
+                Storage::disk('S3Video')->put($thumbnailFileName, (string)$img, 'public');
+                $user->photo = Storage::disk('S3Video')->url($thumbnailFileName);
+                $user->save();
+            } catch (Exception $e) {
+                return redirect('admin/users')->with('flash_message', 'The user have been updated successfully, but user photo was not uploaded');
+            }
+        }
+        return redirect('admin/users')->with('flash_message', 'The user have been updated successfully');
     }
 
 

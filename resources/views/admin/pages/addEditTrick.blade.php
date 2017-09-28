@@ -19,7 +19,7 @@
             var description_count = 0;
             var description_text = "{{isset($trick) ? $trick->trick_description : ''}}";
             description_text = description_text.replace(/&quot;/g, '\"');
-
+            console.log(description_text);
 
             $("#btn_add_description").on("click", function () {
                 add_description_box("", "", "");
@@ -40,7 +40,8 @@
                        '<div class="form-group">\n' +
                         '    <label class="control-label col-lg-2">Photo</label>\n' +
                         '    <div class="col-lg-10">\n' +
-                        '        <input type="file" class="description-file-input form-control" name="picture[]" accept=".png, .jpg" data-allowed-file-extensions=\'["png", "jpg"]\' data-show-caption="true" required>\n' +
+                        '        <input type="file" class="description-file-input form-control" name="picture[]" accept=".png, .jpg" ' +
+                   'data-allowed-file-extensions=\'["png", "jpg"]\' data-show-caption="true" value="'+thumbnail+'" required>\n' +
                         '    </div>\n' +
                         '</div>' +
                         '</li>' +
@@ -164,7 +165,7 @@
         <div class="row">
             <div class="panel panel-flat">
                 <div class="panel-body">
-                    <form class="form-horizontal" action="{{url('/admin/tricks/updateOrAdd')}}" enctype="multipart/form-data" method="post">
+                    <form class="form-horizontal" action="@if (isset($trick)) {{url('/admin/tricks/'.$trick->trick_id.'/update')}} @else {{url('/admin/tricks/create')}} @endif" enctype="multipart/form-data" method="post">
                         {{ csrf_field() }}
                         <div class="form-group" hidden="true">
                             <label class="control-label col-lg-2"> Trick ID</label>
@@ -205,10 +206,10 @@
                         <div class="form-group">
                             <label class="control-label col-lg-2">Trick tags</label>
                             <div class="col-lg-10">
-                                <select multiple="multiple" class="select" name="trick_tags" data-placeholder="Select tags" required>
+                                <select multiple="multiple" class="select" name="trick_tags[]" data-placeholder="Select tags" required>
                                     @if (isset($trick))
                                         @foreach($tags as $tag)
-                                            <option value="{{$tag->tag_name}}"
+                                            <option value="{{$tag->tag_id}}"
                                                 @foreach($trickTags as $trickTag)
                                                     @if ($trickTag->tag_id == $tag->tag_id)
                                                         selected
@@ -217,7 +218,7 @@
                                         @endforeach
                                     @else
                                         @foreach($tags as $tag)
-                                            <option value="{{$tag->tag_name}}">{{$tag->tag_name}}</option>
+                                            <option value="{{$tag->tag_id}}">{{$tag->tag_name}}</option>
                                         @endforeach
                                     @endif
                                 </select>
