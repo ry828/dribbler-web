@@ -42,7 +42,6 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/users/{user_id}/get_achievements', 'RestfulAPIController@getAchievements');
         Route::get('/users/{user_id}/users', 'RestfulAPIController@get_users');
 
-
         // follow user or get Follower list
         Route::post('/users/{user_id}/follower', 'RestfulAPIController@follow_user');
         Route::get('/users/{user_id}/followings', 'RestfulAPIController@get_following_list');
@@ -53,7 +52,7 @@ Route::group(['prefix' => 'v1'], function () {
 
         /* Categories */
         Route::get('/categories', 'RestfulAPIController@get_categories');
-
+        Route::get('/{category_id}/unlock_category', 'RestfulAPIController@unlock_category');
         /* Tags */
         Route::get('/tags', 'RestfulAPIController@get_tags');
 

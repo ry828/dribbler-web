@@ -4,8 +4,16 @@ namespace App\Http\Controllers;
 use App\Comment;
 use App\Dribbler;
 use App\Follow;
+use App\Transaction;
+use App\User_Category;
 use App\Video;
 use App\Video_Like;
+use App\User;
+use App\Category;
+use App\Trick;
+use App\Tag;
+use App\Unlock_rule;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
@@ -15,11 +23,9 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 use Carbon\Carbon;
-use App\User;
-use App\Category;
-use App\Trick;
-use App\Tag;
-use App\Unlock_rule;
+
+
+
 require '../vendor/autoload.php';
 use Mailgun\Mailgun;
 
@@ -415,7 +421,12 @@ class RestfulAPIController extends Controller
             && $unlock_rules[0]->gold_medal_count <= $gold_medal_count
             && $unlock_rules[0]->follower_count <= $follower_count
             && $unlock_rules[0]->following_count <= $following_count ) {
-            $user->subscribe = 1;
+            //unlock advanced
+            $user_cateogry = new User_Category();
+            $user_cateogry->user_id = $user->id;
+            $user_cateogry->category_id = 2;
+            $user_cateogry->type = 1;//payment, 1: unlock rule
+            $user_cateogry->save();
         }
         if ($unlock_rules[1]->facebook_connect <= $user->enable_facebook 
             && $unlock_rules[1]->google_connect <= $user->enable_google
@@ -431,7 +442,20 @@ class RestfulAPIController extends Controller
             && $unlock_rules[1]->gold_medal_count <= $gold_medal_count
             && $unlock_rules[1]->follower_count <= $follower_count
             && $unlock_rules[1]->following_count <= $following_count ) {
-            $user->subscribe = 3;
+            //unlock advanced
+            $user_cateogry = new User_Category();
+            $user_cateogry->user_id = $user->id;
+            $user_cateogry->category_id = 2;
+            $user_cateogry->type = 1;//payment, 1: unlock rule
+            $user_cateogry->save();
+            //unlock professional
+            $user_cateogry = new User_Category();
+            $user_cateogry->user_id = $user->id;
+            $user_cateogry->category_id = 3;
+            $user_cateogry->type = 1;//payment, 1: unlock rule
+            $user_cateogry->save();
+
+
         }
         $user->save();
     }
@@ -719,6 +743,7 @@ class RestfulAPIController extends Controller
 
     public function get_video_followers($video_id)
     {
+
         $followers = DB::table('video_likes')
             ->select('id', 'first_name', 'last_name', 'photo')
             ->leftJoin('users', 'users.id', 'video_likes.user_id')
@@ -736,12 +761,44 @@ class RestfulAPIController extends Controller
     public function get_categories()
     {
         $categories = Category::with('tricks')
+            ->select('*', DB::raw('EXISTS(SELECT * FROM user_category WHERE categories.category_id = user_category.category_id) as unlocked'))
             ->where('active', '1')
             ->get();
 
         return $this->responseSuccess($categories);
     }
+    public function unlock_category($category_id) {
+        $user = JWTAuth::parseToken()->authenticate();
+        //add subscribed user
+        $user->subscribe = 1;
+        $user->save();
 
+        //add transaction
+        $category = Category::findOrFail($category_id);
+        //check previous history
+        $histories= Transaction::where('user_id', $user->id)->where('category_id', $category_id)->get();
+        if (count($histories) == 0) {
+            $transaction = new Transaction();
+            $transaction->category_id = $category_id;
+            $transaction->user_id = $user->id;
+            $transaction->value = $category->price;
+            $transaction->ref_id = 0;
+            $transaction->save();
+        }
+
+        //add unlocked category
+        $unlocked = User_Category::where('user_id', $user->id)->where('category_id', $category_id)->get();
+        if (count($unlocked) == 0) {
+            $user_cateogry = new User_Category();
+            $user_cateogry->user_id = $user->id;
+            $user_cateogry->category_id = $category_id;
+            $user_cateogry->type = 0;//payment, 1: unlock rule
+            $user_cateogry->save();
+
+        }
+
+        return $this->responseSuccess();
+    }
     public function get_tags()
     {
         $tags = Tag::get();
