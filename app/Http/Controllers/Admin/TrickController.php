@@ -26,7 +26,8 @@ class TrickController extends Controller
     {
         $tricks = DB::table('tricks')
             ->select('trick_id', 'trick_title', 'category_title')
-            ->where('active', '1')
+            ->where('tricks.active', '1')
+            ->where('categories.active', '1')
             ->join('categories', 'categories.category_id', 'tricks.category_id')
             ->get();
 
