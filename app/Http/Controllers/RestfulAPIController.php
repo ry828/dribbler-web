@@ -5,6 +5,7 @@ use App\Comment;
 use App\Dribbler;
 use App\Follow;
 use App\Transaction;
+use App\Trick_tag;
 use App\User_Category;
 use App\Video;
 use App\Video_Like;
@@ -406,10 +407,10 @@ class RestfulAPIController extends Controller
             }
         }
 
-        $followers = Follow::where('user_id', $user->id)->where('status', '1')->get();
+        $followers = Follow::where('user_id', $user->id)->where('follow_status', '1')->get();
         $follower_count = count($followers);
 
-        $followings = Follow::where('follower_id', $user->id)->where('status', '1')->get();
+        $followings = Follow::where('follower_id', $user->id)->where('follow_status', '1')->get();
         $following_count = count($followings);
 
         if ($unlock_rules[0]->facebook_connect <= $user->enable_facebook 
@@ -544,7 +545,11 @@ class RestfulAPIController extends Controller
             } else {
                 $average_per_category = $total_average_per_category / count($tricks);
             }
-            $overview_statistic[$category->category_title] = round($average_per_category, 1);
+            $statistic = array();
+            $statistic['title'] = $category->category_title;
+            $statistic['score'] = round($average_per_category, 1);
+            array_push($overview_statistic, $statistic);
+
         }
         $result['overview'] = $overview_statistic;
         //get tag statistic
@@ -815,6 +820,13 @@ class RestfulAPIController extends Controller
         $tricks = Trick::where('category_id', $category_id)
             ->where('active', '1')
             ->get();
+        foreach ($tricks as $trick) {
+            $tags = Tag::leftJoin('trick_tag', 'trick_tag.tag_id', 'tags.tag_id')
+                ->where('trick_tag.trick_id', $trick->trick_id)
+                ->pluck('tags.tag_name')
+                ->toArray();
+            $trick->trick_tags = implode(',', $tags);
+        }
         return $this->responseSuccess($tricks);
     }
 
@@ -826,7 +838,7 @@ class RestfulAPIController extends Controller
             ->select('try_on', 'trick_id', 'dribbler_id', 'created_at')
             ->where('user_id', $user->id)
             ->where('trick_id', $trick_id)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('try_on', 'asc')
             ->limit(10)
             ->get();
 
