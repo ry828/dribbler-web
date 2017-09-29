@@ -231,11 +231,11 @@ class UserController extends Controller
         return View('admin.pages.user-video-comments', compact('comments', 'user', 'video_id'));
     }
 
-    public function goto_edit_comment($comment_id, $video_id) {
+    public function goto_edit_comment($video_id, $comment_id) {
         $comment = Comment::findOrFail($comment_id);
         return View('admin.pages.editComment', compact('comment', 'video_id'));
     }
-    public function update_comment($comment_id, $video_id) {
+    public function update_comment($video_id, $comment_id) {
         $comment = Comment::findOrFail($comment_id);
         $message = Input::get('message');
         $comment->message = $message;

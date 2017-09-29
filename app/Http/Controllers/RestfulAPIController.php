@@ -95,6 +95,9 @@ class RestfulAPIController extends Controller
             if ($user->status != 'active') {
                 return $this->responseAccessDeniedError('Account is disabled or deleted');
             }
+            if (!$user->verified) {
+                return $this->responseUnauthorizedError('You are not verified yet');
+            }
         }
 
         // Create Token
@@ -103,7 +106,19 @@ class RestfulAPIController extends Controller
 
         return $this->responseSuccess($response);
     }
-
+    public function verify_user() {
+        $email = Input::get('email');
+        $confirmation_code = Input::get('confirmation_code');
+        $user = User::where('email', $email)->where('confirmation_code', $confirmation_code)->first();
+        if (empty($user)) {
+            return $this->responseUnauthorizedError('Sorry, you are not verified');
+        } else {
+            $user->verfied = 1;
+            $user->confirmation_code = '';
+            $user->save();
+            return $this->responseSuccess();
+        }
+    }
     public function register()
     {
         $credentials = Input::all();
@@ -153,12 +168,12 @@ class RestfulAPIController extends Controller
             }
         }
 
-        // if user didn't sign up with social networks, send verification email.
-        // if (!$user->verified) {
-        //    $user->confirmation_code = str_random(16);
-        //    $user->save();
-        //    $this->sendEmail($user->email, 'Verification Email', $user->confirmation_code);
-        // }
+//         if user didn't sign up with social networks, send verification email.
+         if (!$user->verified) {
+            $user->confirmation_code = str_random(4);
+            $user->save();
+            $this->sendVerificationEmail($user->email, 'Verification Email', $user->confirmation_code);
+         }
 
 
         // Create Token
@@ -167,24 +182,24 @@ class RestfulAPIController extends Controller
 
         return $this->responseSuccess($response);
     }
-    function sendEmail($email, $text, $code) {
-        $mailgun_key = 'key-e5e3b19a2cab708fe15e59f1a48adb8f';
-        $domain = 'mg.dribbler.org';
-
-        $mg = new Mailgun($mailgun_key);
-        $email_result = $mg->sendMessage($domain, array(
-                'from'    => 'info@dribbler.org',
-                'to'      => $email,
-                'subject' => $text,
-                'text'    => $code));
-        $http_response_code = $email_result->http_response_code;
-        if ($http_response_code == 200) {
-            return $this->responseSuccess();
-        } else {
-            return $this->responseValidationError();
-        }
-        
-    }
+//    function sendEmail($email, $text, $code) {
+//        $mailgun_key = 'key-e5e3b19a2cab708fe15e59f1a48adb8f';
+//        $domain = 'mg.dribbler.org';
+//
+//        $mg = new Mailgun($mailgun_key);
+//        $email_result = $mg->sendMessage($domain, array(
+//                'from'    => 'info@dribbler.org',
+//                'to'      => $email,
+//                'subject' => $text,
+//                'text'    => $code));
+//        $http_response_code = $email_result->http_response_code;
+//        if ($http_response_code == 200) {
+//            return 'success';
+//        } else {
+//            return 'failed';
+//        }
+//
+//    }
 
     public function forgot_password()
     {

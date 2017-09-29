@@ -24,7 +24,7 @@ class Controller extends BaseController
 
     protected function responseSuccess($response = [])
     {
-        // $response['result'] = 'success';
+//         $response['result'] = 'success';
         return response()->json($response);
     }
 

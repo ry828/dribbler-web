@@ -26,6 +26,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('/users/me/profile', 'RestfulAPIController@postProfile');
         Route::post('users/me/logout', 'RestfulAPIController@logout');
         Route::delete('/users/me', 'RestfulAPIController@deleteProfile');
+        Route::post('/users/verify', 'RestfulAPIController@verify_user');
         Route::get('/users/{user_id}/status', 'RestfulAPIController@getProfileStatus');
         Route::get('/users/{user_id}/profile', 'RestfulAPIController@getOtherUserProfile');
         Route::get('/users/update_profile', 'RestfulAPIController@updateProfiles');

@@ -26,7 +26,7 @@
                 <ul class="breadcrumb">
                     <li><a href="{{ URL::to('/admin/users') }}"><i class="icon-home2 position-left"></i>Users</a></li>
                     <li><a href="{{ URL::to('/admin/users/' . $user_id . '/edit') }}">{{ $user_id }}</a></li>
-                    <li><a href="{{ URL::to('/admin/transactions/index') }}"><i class="icon-home2 position-left"></i>Payment History</a></li>
+                    <li><a href="{{ URL::to('/admin/transactions/index') }}">Payment History</a></li>
 
                 </ul>
             </div>
