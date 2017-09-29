@@ -760,9 +760,8 @@ class RestfulAPIController extends Controller
 
     public function get_categories()
     {
-        $categories = Category::with('tricks')
-            ->select('*', DB::raw('EXISTS(SELECT * FROM user_category WHERE categories.category_id = user_category.category_id) as unlocked'))
-            ->where('active', '1')
+        $categories = Category::select('*', DB::raw('EXISTS(SELECT * FROM user_category WHERE categories.category_id = user_category.category_id) as unlocked'))
+            ->where('categories.active', '1')
             ->get();
 
         return $this->responseSuccess($categories);
@@ -811,6 +810,13 @@ class RestfulAPIController extends Controller
      * Tricks
      * ***********************************************************
      */
+
+    public function get_tricks_by_category($category_id) {
+        $tricks = Trick::where('category_id', $category_id)
+            ->where('active', '1')
+            ->get();
+        return $this->responseSuccess($tricks);
+    }
 
     public function get_trick_statistics($trick_id)
     {

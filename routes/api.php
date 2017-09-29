@@ -60,6 +60,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/tricks/{trick_id}/statistics', 'RestfulAPIController@get_trick_statistics');
         Route::get('tricks/{trick_id}/users', 'RestfulAPIController@get_trick_users');
         Route::get('tricks/{trick_id}/videos', 'RestfulAPIController@get_trick_videos');
+        Route::get('tricks/{category_id}/get_tricks_by_category', 'RestfulAPIController@get_tricks_by_category');
 
         /* Dribbler */
         Route::post('/dribblers', 'RestfulAPIController@post_dribbler');
